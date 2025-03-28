@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:create": "tsx scripts/create-db.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",

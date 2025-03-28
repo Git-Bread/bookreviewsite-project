@@ -35,7 +35,4 @@ export const initDb = () => {
   `);
 };
 
-// Initialize on import
-initDb();
-
 export default db;
