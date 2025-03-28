@@ -45,7 +45,11 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token using jose
     const secret = new TextEncoder().encode(
-      process.env.NEXTAUTH_SECRET || "your-fallback-secret"
+      process.env.NEXTAUTH_SECRET || 
+      (() => {
+        console.warn("WARNING: Using fallback secret. Set NEXTAUTH_SECRET in env!");
+        return "Thisisthebestsecretkeyever...pleasechangeit";
+      })()
     );
     
     const token = await new SignJWT({ 

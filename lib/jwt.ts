@@ -16,7 +16,11 @@ export async function getTokenData(request: NextRequest): Promise<JwtPayload | n
 
     const token = authHeader.substring(7);
     const secret = new TextEncoder().encode(
-      process.env.NEXTAUTH_SECRET || "your-fallback-secret"
+        process.env.NEXTAUTH_SECRET || 
+        (() => {
+            console.warn("WARNING: Using fallback secret. Set NEXTAUTH_SECRET in env!");
+            return "Thisisthebestsecretkeyever...pleasechangeit";
+        })()
     );
     
     const { payload } = await jwtVerify(token, secret);

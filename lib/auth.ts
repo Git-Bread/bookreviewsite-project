@@ -66,9 +66,15 @@ export const authOptions: NextAuthOptions = {
       return session;
     }
   },
-  // Remove the pages config to prevent redirects
-  // pages: {
-  //   signIn: "/login",
-  // },
-  secret: process.env.NEXTAUTH_SECRET || "your-fallback-secret",
+  secret: process.env.NEXTAUTH_SECRET || (() => {
+    console.error("ERROR: No NEXTAUTH_SECRET environment variable set!");
+    console.error("Please set it NOW for security!");
+    
+    //big nope for production environment
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error("Missing NEXTAUTH_SECRET in production environment");
+    }
+    
+    return "Thisisthebestsecretkeyever...pleasechangeit";
+  })(),
 };
