@@ -9,22 +9,34 @@ export async function middleware(request: NextRequest) {
   const isProtectedApiRoute = pathname.startsWith("/api/reviews");
   
   if (isProtectedApiRoute) {
-    // Check for Authorization header with Bearer token
-    const authHeader = request.headers.get("Authorization");
+    let token;
     
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // First check for token in cookie
+    const tokenCookie = request.cookies.get('token');
+    if (tokenCookie?.value) {
+      token = tokenCookie.value;
+    } else {
+      // Fall back to Authorization header
+      const authHeader = request.headers.get("Authorization");
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+      }
+    }
+    
+    if (!token) {
       return NextResponse.json(
-        { error: "Unauthorized - Missing or invalid token" },
+        { error: "Unauthorized - Missing token" },
         { status: 401 }
       );
     }
-
-    const token = authHeader.substring(7);
     
     try {
       // Verify JWT token using jose
       const secret = new TextEncoder().encode(
-        process.env.NEXTAUTH_SECRET || "your-fallback-secret"
+        process.env.NEXTAUTH_SECRET || (() => {
+          console.warn("WARNING: Using fallback secret");
+          return "Thisisthebestsecretkeyever...pleasechangeit";
+        })()
       );
       
       await jwtVerify(token, secret);

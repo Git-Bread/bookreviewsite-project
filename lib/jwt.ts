@@ -8,19 +8,27 @@ export interface JwtPayload {
 
 export async function getTokenData(request: NextRequest): Promise<JwtPayload | null> {
   try {
-    const authHeader = request.headers.get("Authorization");
+    let token;
     
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return null;
+    // First try to get token from cookie
+    const tokenCookie = request.cookies.get('token');
+    if (tokenCookie?.value) {
+      token = tokenCookie.value;
+    } else {
+      // Fall back to Authorization header
+      const authHeader = request.headers.get("Authorization");
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return null;
+      }
+      token = authHeader.substring(7);
     }
-
-    const token = authHeader.substring(7);
+    
     const secret = new TextEncoder().encode(
-        process.env.NEXTAUTH_SECRET || 
-        (() => {
-            console.warn("WARNING: Using fallback secret. Set NEXTAUTH_SECRET in env!");
-            return "Thisisthebestsecretkeyever...pleasechangeit";
-        })()
+      process.env.NEXTAUTH_SECRET || 
+      (() => {
+        console.warn("WARNING: Using fallback secret. Set NEXTAUTH_SECRET in env!");
+        return "Thisisthebestsecretkeyever...pleasechangeit";
+      })()
     );
     
     const { payload } = await jwtVerify(token, secret);
