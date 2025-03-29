@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/db";
 import { reviews } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";  // Add 'and' import
 import { getTokenData } from "@/lib/jwt";
 
 // Get all reviews by the authenticated user
