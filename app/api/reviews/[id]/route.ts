@@ -4,7 +4,7 @@ import { reviews } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getTokenData } from "@/lib/jwt";
 
-// Get a specific review by ID - Public Access
+// Get a specific review by ID - Public
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -12,7 +12,7 @@ export async function GET(
   try {
     const reviewId = parseInt(params.id);
     
-    // Validate reviewId
+    // Validate
     if (isNaN(reviewId)) {
       return NextResponse.json(
         { error: "Invalid review ID" },
@@ -20,7 +20,6 @@ export async function GET(
       );
     }
 
-    // Public access to reviews
     const review = await db.select()
       .from(reviews)
       .where(eq(reviews.id, reviewId))
@@ -51,7 +50,7 @@ export async function PUT(
   try {
     const userData = await getTokenData(request);
 
-    // Authentication check
+    // Auth check
     if (!userData) {
       return NextResponse.json(
         { error: "Unauthorized - Authentication required" },
@@ -60,7 +59,6 @@ export async function PUT(
     }
 
     const reviewId = parseInt(params.id);
-    
     if (isNaN(reviewId)) {
       return NextResponse.json(
         { error: "Invalid review ID" },
@@ -117,7 +115,7 @@ export async function DELETE(
   try {
     const userData = await getTokenData(request);
 
-    // Authentication check
+    // Auth check
     if (!userData) {
       return NextResponse.json(
         { error: "Unauthorized - Authentication required" },
@@ -126,7 +124,6 @@ export async function DELETE(
     }
     
     const reviewId = parseInt(params.id);
-    
     if (isNaN(reviewId)) {
       return NextResponse.json(
         { error: "Invalid review ID" },

@@ -1,36 +1,257 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Book Review API Documentation
+
+This is a REST API for managing book reviews with user authentication built with Next.js. It allows users to register, login, and manage their book reviews securely.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js (v18 or later)
+- npm or yarn
+
+### Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/bookapi-project.git
+cd bookapi-project
+```
+2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
+3. Create the database
+```bash
+npm run db:create
+```
+4. Setup enviroment variable IMPORTANT!
+- NEXTAUTH_SECRET=your-secure-secret-key
+
+5. Run development server
 ```bash
 npm run dev
 # or
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API Reference
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Authentication Routes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Register a new user
+```
+POST /api/auth/register
+```
+- **Request Body**:
+  ```json
+  {
+    "username": "string",
+    "password": "string"
+  }
+  ```
+- **Success Response**: `201 Created`
+  ```json
+  {
+    "id": "number",
+    "username": "string"
+  }
+  ```
+- **Error Responses**:
+  - `400 Bad Request`: Missing required fields or password too short
+  - `409 Conflict`: Username already exists
+  - `500 Internal Server Error`: Server error
 
-## Learn More
+#### Login
+```
+POST /api/auth/login
+```
+- **Request Body**:
+  ```json
+  {
+    "username": "string",
+    "password": "string"
+  }
+  ```
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "user": {
+      "id": "number",
+      "username": "string"
+    },
+    "success": true
+  }
+  ```
+  Also sets a secure HTTP-only cookie with the JWT token.
+- **Error Responses**:
+  - `400 Bad Request`: Missing credentials
+  - `401 Unauthorized`: Invalid credentials
+  - `500 Internal Server Error`: Server error
 
-To learn more about Next.js, take a look at the following resources:
+#### Logout
+```
+POST /api/auth/logout
+```
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "success": true
+  }
+  ```
+  Also clears the authentication cookie.
+- **Error Response**: `500 Internal Server Error`: Server error
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### NextAuth
+```
+GET/POST /api/auth/[...nextauth]
+```
+- NextAuth.js authentication endpoints
+- Manages sessions, callbacks, and JWT processing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Review Routes
 
-## Deploy on Vercel
+#### Get all reviews by authenticated user
+```
+GET /api/reviews
+```
+- **Authentication**: Required (JWT token)
+- **Success Response**: `200 OK`
+  ```json
+  [
+    {
+      "id": "number",
+      "userId": "number",
+      "bookId": "string",
+      "rating": "number",
+      "review": "string",
+      "title": "string",
+      "createdAt": "string",
+      "updatedAt": "string"
+    }
+  ]
+  ```
+- **Error Responses**:
+  - `401 Unauthorized`: Missing or invalid token
+  - `500 Internal Server Error`: Server error
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### Create a new review
+```
+POST /api/reviews
+```
+- **Authentication**: Required (JWT token)
+- **Request Body**:
+  ```json
+  {
+    "bookId": "string",
+    "rating": "number",
+    "review": "string",
+    "title": "string"
+  }
+  ```
+- **Success Response**: `201 Created`
+  ```json
+  {
+    "id": "number",
+    "userId": "number",
+    "bookId": "string",
+    "rating": "number",
+    "review": "string",
+    "title": "string",
+    "createdAt": "string",
+    "updatedAt": "string"
+  }
+  ```
+- **Error Responses**:
+  - `400 Bad Request`: Missing bookId
+  - `401 Unauthorized`: Missing or invalid token
+  - `500 Internal Server Error`: Server error
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### Get a specific review
+```
+GET /api/reviews/[id]
+```
+- **Authentication**: Not required
+- **Path Parameters**: `id` - The review ID
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "id": "number",
+    "userId": "number",
+    "bookId": "string",
+    "rating": "number",
+    "review": "string",
+    "title": "string",
+    "createdAt": "string",
+    "updatedAt": "string"
+  }
+  ```
+- **Error Responses**:
+  - `400 Bad Request`: Invalid review ID
+  - `404 Not Found`: Review not found
+  - `500 Internal Server Error`: Server error
+
+#### Update a review
+```
+PUT /api/reviews/[id]
+```
+- **Authentication**: Required (JWT token)
+- **Path Parameters**: `id` - The review ID
+- **Request Body**:
+  ```json
+  {
+    "rating": "number",
+    "review": "string",
+    "title": "string"
+  }
+  ```
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "id": "number",
+    "userId": "number",
+    "bookId": "string",
+    "rating": "number",
+    "review": "string",
+    "title": "string",
+    "createdAt": "string",
+    "updatedAt": "string"
+  }
+  ```
+- **Error Responses**:
+  - `400 Bad Request`: Invalid review ID
+  - `401 Unauthorized`: Missing or invalid token
+  - `404 Not Found`: Review not found or user doesn't have permission
+  - `500 Internal Server Error`: Server error
+
+#### Delete a review
+```
+DELETE /api/reviews/[id]
+```
+- **Authentication**: Required (JWT token)
+- **Path Parameters**: `id` - The review ID
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "success": true,
+    "message": "Review deleted successfully"
+  }
+  ```
+- **Error Responses**:
+  - `400 Bad Request`: Invalid review ID
+  - `401 Unauthorized`: Missing or invalid token
+  - `404 Not Found`: Review not found or user doesn't have permission
+  - `500 Internal Server Error`: Server error
+
+## Authentication
+
+The API uses two authentication mechanisms:
+1. **JWT tokens** via HTTP-only cookies
+2. **NextAuth.js** for more complex authentication flows
+
+Protected routes require a valid JWT token which can be provided either:
+- As an HTTP-only cookie named `token` (set automatically on login)
+- In the `Authorization` header using the Bearer scheme

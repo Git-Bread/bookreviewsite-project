@@ -8,15 +8,13 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
     
-    // Validate input
+    // Validate
     if (!username || !password) {
       return NextResponse.json(
         { error: "Username and password are required" },
         { status: 400 }
       );
     }
-
-    // Validate password strength
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters long" },
@@ -24,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
+    // Check if user exists
     const existingUser = await db.select()
       .from(users)
       .where(eq(users.username, username))
@@ -37,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash the password
+    // Hash the password, whoooo security
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
@@ -53,6 +51,7 @@ export async function POST(request: NextRequest) {
       { id: newUser.id, username: newUser.username },
       { status: 201 }
     );
+  //shit hit the fan
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(

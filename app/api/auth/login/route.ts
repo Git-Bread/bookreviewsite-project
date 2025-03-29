@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
     
-    // Validate input
+    // Validation
     if (!username || !password) {
       return NextResponse.json(
         { error: "Username and password are required" },
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user in database
+    // Check if user exists
     const user = await db.select()
       .from(users)
       .where(eq(users.username, username))
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
+    // Check password
     const isPasswordValid = await bcrypt.compare(
       password,
       user.password
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate JWT token using jose
+    // JWT generation - With jose
     const secret = new TextEncoder().encode(
       process.env.NEXTAUTH_SECRET || 
       (() => {
@@ -61,7 +61,6 @@ export async function POST(request: NextRequest) {
       .setExpirationTime("30d")
       .sign(secret);
 
-    // Return user data and token
     const response = NextResponse.json({
       user: {
         id: user.id,
@@ -70,7 +69,7 @@ export async function POST(request: NextRequest) {
       success: true
     });
 
-    //Set JWT as HttpOnly cookie
+    // Return JWT as a cookie
     response.cookies.set({
       name: "token",
       value: token,
@@ -82,6 +81,8 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
+
+  // if shit hits the fan
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
