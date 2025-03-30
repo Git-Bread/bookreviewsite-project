@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/db";
 import { reviews } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { getTokenData } from "@/lib/jwt";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 // Get a specific review by ID - Public
 export async function GET(
@@ -48,10 +49,10 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const userData = await getTokenData(request);
+    const session = await getServerSession(authOptions);
 
     // Auth check
-    if (!userData) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized - Authentication required" },
         { status: 401 }
@@ -74,7 +75,7 @@ export async function PUT(
       .where(
         and(
           eq(reviews.id, reviewId),
-          eq(reviews.userId, userData.id)
+          eq(reviews.userId, parseInt(session.user.id))
         )
       )
       .get();
@@ -113,10 +114,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const userData = await getTokenData(request);
+    const session = await getServerSession(authOptions);
 
     // Auth check
-    if (!userData) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized - Authentication required" },
         { status: 401 }
@@ -137,7 +138,7 @@ export async function DELETE(
       .where(
         and(
           eq(reviews.id, reviewId),
-          eq(reviews.userId, userData.id)
+          eq(reviews.userId, parseInt(session.user.id))
         )
       )
       .get();

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import db from "@/db";
 import { reviews, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { getTokenData } from "@/lib/jwt";
 
 // Helper function to create a query with user join, avoids repetition, only thing it does is adds username to the reviews query
 function createReviewQuery() {
@@ -27,15 +28,15 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const userId = url.searchParams.get("userId");
     const getAll = url.searchParams.get("all") === "true";
-    const userData = await getTokenData(request);
+    const session = await getServerSession(authOptions);
     
     // Case 1: Get current authenticated user's reviews (private, requires auth)
     if (!getAll && !userId) {
-      if (!userData) {
+      if (!session || !session.user || !session.user.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       const userReviews = await createReviewQuery()
-        .where(eq(reviews.userId, userData.id))
+        .where(eq(reviews.userId, parseInt(session.user.id)))
         .all();
       
       return NextResponse.json(userReviews);
@@ -77,9 +78,9 @@ export async function GET(request: NextRequest) {
 // Create a new review
 export async function POST(request: NextRequest) {
   try {
-    const userData = await getTokenData(request);
+    const session = await getServerSession(authOptions);
 
-    if (!userData) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -95,9 +96,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userId = parseInt(session.user.id);
     const [newReview] = await db.insert(reviews)
       .values({
-        userId: userData.id,
+        userId: userId,
         bookId,
         rating,
         review,
