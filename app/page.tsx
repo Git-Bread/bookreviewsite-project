@@ -58,8 +58,10 @@ export default function Home() {
   };
 
   const handlePageChange = (newPage: number) => {
+    // limits it to 10 pages, since the results go to shit around 5 pages in.
+    const effectiveMaxPages = Math.min(10, Math.ceil(totalItems / ITEMS_PER_PAGE));
     // Makes sure the page number is valid, needs to be above 0 and below the total number of pages
-    if (newPage < 1 || newPage > Math.ceil(totalItems / ITEMS_PER_PAGE)) return;
+    if (newPage < 1 || newPage > effectiveMaxPages) return;
     // Prevents unnecessary API calls if the page number is the same, gotta be nice to google sometimes
     if (newPage === currentPage) return;
     
@@ -109,7 +111,7 @@ export default function Home() {
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {totalItems > 0 ? (
                       <>
-                        Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems > 10000 ? "way to many" : totalItems} results
+                        Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {Math.min(totalItems, ITEMS_PER_PAGE * 10)} results
                       </>
                     ) : (
                       `${books.length} results`
@@ -129,7 +131,7 @@ export default function Home() {
                       <div className="flex">
                         {[...Array(Math.min(5, Math.ceil(totalItems / ITEMS_PER_PAGE)))].map((_, i) => {
                           let pageNum: number;
-                          const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+                          const totalPages = Math.min(10, Math.ceil(totalItems / ITEMS_PER_PAGE));
                           
                           // Page number logic "sliding window"
                           if (currentPage <= 3) {
@@ -159,7 +161,7 @@ export default function Home() {
                       </div>
                       
                       <button
-                        onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= Math.ceil(totalItems / ITEMS_PER_PAGE)} 
+                        onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= Math.min(10, Math.ceil(totalItems / ITEMS_PER_PAGE))} 
                         className="px-3 py-2 ml-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
                     </nav>
                   </div>
