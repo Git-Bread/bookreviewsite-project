@@ -39,7 +39,7 @@ export const authOptions: NextAuthOptions = {
           return {
             id: String(user.id),
             name: user.username,
-            isAdmin: user.isAdmin // Include admin status
+            admin: user.admin
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.isAdmin = user.isAdmin ?? false; // Default to false if not provided
+        token.admin = user.admin ?? false; // Default to false if not provided
       }
       return token;
     },
@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.isAdmin = token.isAdmin as boolean;
+        session.user.admin = token.admin as boolean;
       }
       return session;
     }

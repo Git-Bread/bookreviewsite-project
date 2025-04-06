@@ -15,7 +15,9 @@ export const initDb = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      admin BOOLEAN NOT NULL DEFAULT 0,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP
     )
   `);
 
@@ -25,10 +27,10 @@ export const initDb = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       book_id TEXT NOT NULL,
-      rating REAL,
-      review TEXT,
-      review_title TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      rating INTEGER NOT NULL,
+      review TEXT NOT NULL,
+      title TEXT NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     )

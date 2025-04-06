@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import LoginModal from './LoginModal';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface HeaderProps {
   title: string;
@@ -52,11 +53,23 @@ const Header = ({ title }: HeaderProps) => {
         </div>
       </div>
       
+      {/* Navigation bar */}
+      {isAuthenticated && (
+      <nav className="bg-blue-200 p-3 ml-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6">
+          <RouterLink to="/" className="font-bold hover:underline">Home</RouterLink>
+          <RouterLink to="/myreviews" className="font-bold hover:underline">My Reviews</RouterLink>
+          {session?.user?.admin && (
+            <RouterLink to="/admin" className="font-bold hover:underline">Admin</RouterLink>
+          )}
+        </div>
+      </nav>
+      )}
+      
       {/* Modal for login, with close function passed as a prop */}
       {isModalOpen && <LoginModal onClose={closeModal} />}
     </header>
   );
 };
 
-// Note: Component names should start with uppercase
 export default Header;

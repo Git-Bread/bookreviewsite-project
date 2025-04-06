@@ -9,6 +9,10 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
+// script to create an admin user in the database
+// theres no inpage function to create admin users since that would be a voulnerability
+// this script is run from the command line and therefore has access to the database directly and cant be exploited by a user
+// not good for large scale setups but perfect for this
 async function createAdmin() {
   console.log('Admin User Creation Tool');
   console.log('------------------------');
@@ -37,10 +41,10 @@ async function createAdmin() {
           .get();
         
         if (existingUser) {
-          // Update existing user to admin
+          // Update existing user to admin - schema property name
           await db.update(users)
             .set({ 
-              isAdmin: true,
+              admin: true,  // map to "is_admin" in the database
               password: await bcrypt.hash(password, 10),
               updatedAt: new Date() 
             })
@@ -48,12 +52,12 @@ async function createAdmin() {
             
           console.log(`User "${username}" updated to admin successfully`);
         } else {
-          // Create new admin user
+          // Create new admin use
           await db.insert(users)
             .values({
               username,
               password: await bcrypt.hash(password, 10),
-              isAdmin: true,
+              admin: true,  // map to "is_admin" in the database
               createdAt: new Date()
             });
             

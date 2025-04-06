@@ -1,4 +1,5 @@
 import { AuthProvider } from "./providers";
+import ReactRouter from "@/components/ReactRouter";
 import "./globals.css";
 
 export const metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {children}
+          <ReactRouter>
+            {children}
+          </ReactRouter>
         </AuthProvider>
       </body>
     </html>
