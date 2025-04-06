@@ -1,10 +1,39 @@
 'use client';
 
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import ReviewModal from './ReviewModal';
+import LoginModal from './LoginModal';
+
 interface BookListProps {
   books: any[];
 }
 
 export default function BookList({ books }: BookListProps) {
+  const { data: session } = useSession();
+  const [selectedBook, setSelectedBook] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+
+  const openReviewModal = (book: any) => {
+    if (!session) {
+      // Open login modal instead if not logged in
+      setIsLoginModalOpen(true);
+      return;
+    }
+    setSelectedBook(book);
+    setIsModalOpen(true);
+  };
+
+  const closeReviewModal = () => {
+    setIsModalOpen(false);
+    // Reset selectedBook after a short delay to avoid UI flicker
+    setTimeout(() => setSelectedBook(null), 200);
+  };
+
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -35,13 +64,34 @@ export default function BookList({ books }: BookListProps) {
               )}
               
               <div className="mt-2">
-                <button className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  onClick={(e) => {e.stopPropagation();}}>Write Review</button> {/* Only triggers button to stop refresh */}
+                <button 
+                  className={`text-sm px-3 py-1 rounded ${session ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-700'}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openReviewModal(book);
+                  }}
+                >
+                  {session ? 'Write Review' : 'Login to Review'}
+                </button>
               </div>
             </div>
           </div>
         </div>
       ))}
+
+      {/* Review Modal */}
+      {selectedBook && (
+        <ReviewModal 
+          book={selectedBook} 
+          isOpen={isModalOpen} 
+          onClose={closeReviewModal} 
+        />
+      )}
+
+      {/* Login Modal */}
+      {isLoginModalOpen && (
+        <LoginModal onClose={closeLoginModal} />
+      )}
     </div>
   );
 }

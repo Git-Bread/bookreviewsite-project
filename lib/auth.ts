@@ -1,9 +1,9 @@
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import db from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { NextAuthOptions } from "next-auth";
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -18,63 +18,58 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Find user in database
-        const user = await db.select()
-          .from(users)
-          .where(eq(users.username, credentials.username))
-          .get();
+        try {
+          // Find user in database
+          const user = await db.select()
+            .from(users)
+            .where(eq(users.username, credentials.username))
+            .get();
 
-        if (!user) {
+          if (!user) {
+            return null;
+          }
+
+          // Verify password
+          const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+          if (!passwordMatch) {
+            return null;
+          }
+
+          // Return user data
+          return {
+            id: String(user.id),
+            name: user.username,
+            isAdmin: user.isAdmin // Include admin status
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
           return null;
         }
-
-        // Verify password
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-        
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        // Return user object without password
-        return {
-          id: user.id.toString(),
-          name: user.username
-        };
       }
     })
   ],
-  session: {
-    strategy: "jwt",
-    maxAge: 5 * 24 * 60 * 60, // 5 daysb
-  },
   callbacks: {
+    // JWT callback to include isAdmin in token
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.name = user.name;
+        token.isAdmin = user.isAdmin ?? false; // Default to false if not provided
       }
       return token;
     },
+    // Session callback to include isAdmin in session
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id;
-        session.user.name = token.name;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.isAdmin = token.isAdmin as boolean;
       }
       return session;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET || (() => {
-    console.error("ERROR: No NEXTAUTH_SECRET environment variable set!");
-    console.error("Please set it NOW for security!");
-    
-    //big nope for production environment
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error("Missing NEXTAUTH_SECRET in production environment");
-    }
-    
-    return "Thisisthebestsecretkeyever...pleasechangeit";
-  })(),
+  pages: {
+    signIn: '/' // Uses modal not page
+  },
+  session: {
+    strategy: "jwt"
+  }
 };

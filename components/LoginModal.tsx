@@ -31,7 +31,7 @@ const LoginModal = ({ onClose }: LoginModalProps) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
+  
     try {
       if (isRegisterMode) {
         // Registration validations
@@ -46,20 +46,20 @@ const LoginModal = ({ onClose }: LoginModalProps) => {
           setIsLoading(false);
           return;
         }
-
+  
         // Call registration API 
         const registerResponse = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
         });
-
+  
         const registerData = await registerResponse.json();
-
+  
         if (!registerResponse.ok) {
           throw new Error(registerData.error || 'Registration failed');
         }
-
+  
         setIsRegisterMode(false);
         setPassword('');
         setError('');
@@ -71,16 +71,34 @@ const LoginModal = ({ onClose }: LoginModalProps) => {
           password,
           redirect: false,
         });
-
+  
         if (result?.error) {
-          throw new Error(result.error);
+          // Provide more user-friendly error messages
+          if (result.error === "CredentialsSignin") {
+            setError("Invalid username or password. Please try again.");
+          } else {
+            setError(result.error || "Login failed. Please try again.");
+          }
+          setIsLoading(false);
+          return;
         }
-
+  
         onClose();
         router.refresh();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      // Format the error for better readability
+      let errorMessage = "An unexpected error occurred";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
+      // Make error messages more user-friendly
+      if (errorMessage.includes("fetch failed") || errorMessage.includes("network")) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      }
+      
+      setError(errorMessage);
       console.error('Authentication error:', err);
     } finally {
       setIsLoading(false);

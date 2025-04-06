@@ -67,9 +67,6 @@ export default function Home() {
     
     //does a search with the new page number
     handleSearch(searchQuery, newPage);
-    
-    // Scrolls to top when changing a page
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // searchmode toggle with default to books
