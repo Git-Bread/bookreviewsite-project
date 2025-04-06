@@ -9,10 +9,8 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-// script to create an admin user in the database
-// theres no inpage function to create admin users since that would be a voulnerability
-// this script is run from the command line and therefore has access to the database directly and cant be exploited by a user
-// not good for large scale setups but perfect for this
+// script to create an admin user in the database, if it doesn't exist
+// or update an existing user to admin if they exist.
 async function createAdmin() {
   console.log('Admin User Creation Tool');
   console.log('------------------------');

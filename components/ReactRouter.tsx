@@ -5,10 +5,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import HomePage from '@/app/page';
+import AdminPage from '@/app/admin/page';
+import MyReviewsPage from '@/app/myreviews/page';
 
 // Import or create these components for the routes
-const MyReviewsPage = () => <div>My Reviews Page</div>;
-const AdminDashboard = () => <div>Admin Dashboard</div>;
 const NotFoundPage = () => <div>404 - Not Found</div>;
 
 export default function ReactRouter({ children }: { children: React.ReactNode }) {
@@ -30,7 +30,7 @@ export default function ReactRouter({ children }: { children: React.ReactNode })
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/myreviews" element={<MyReviewsPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
