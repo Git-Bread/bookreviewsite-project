@@ -24,7 +24,6 @@ const Header = ({ title }: HeaderProps) => {
   const logoutUser = async () => {
     try {
       await signOut({ redirect: false });
-      window.location.reload();
     } catch (error) {
       console.error('Logout failed:', error);
     }
