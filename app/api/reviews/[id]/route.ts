@@ -5,23 +5,22 @@ import { eq, and } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
+// Define the params type
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
 // Get a specific review by ID - Public
 export async function GET(
   request: NextRequest,
-  context: { params: { id?: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Access the ID safely, accounting for different param structures
-    const id = context.params?.id;
-    
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing review ID" },
-        { status: 400 }
-      );
-    }
-    
-    const reviewId = parseInt(id);
+    // Await the params
+    const params = await context.params;
+    const reviewId = parseInt(params.id);
     
     // Validate
     if (isNaN(reviewId)) {
@@ -56,7 +55,7 @@ export async function GET(
 // Update an existing review - Authentication Required
 export async function PUT(
   request: NextRequest,
-  context: { params: { id?: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -69,15 +68,9 @@ export async function PUT(
       );
     }
 
-    const id = context.params?.id;
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing review ID" },
-        { status: 400 }
-      );
-    }
-    
-    const reviewId = parseInt(id);
+    // Await the params
+    const params = await context.params;
+    const reviewId = parseInt(params.id);
     
     if (isNaN(reviewId)) {
       return NextResponse.json(
@@ -130,7 +123,7 @@ export async function PUT(
 // DELETE a review
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id?: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -142,15 +135,9 @@ export async function DELETE(
       );
     }
     
-    const id = context.params?.id;
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing review ID" },
-        { status: 400 }
-      );
-    }
-    
-    const reviewId = parseInt(id);
+    // Await the params
+    const params = await context.params;
+    const reviewId = parseInt(params.id);
     
     if (isNaN(reviewId)) {
       return NextResponse.json(
