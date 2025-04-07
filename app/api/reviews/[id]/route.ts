@@ -8,13 +8,10 @@ import { authOptions } from "@/lib/auth";
 // Get a specific review by ID - Public
 export async function GET(
   request: NextRequest,
-  { params }: { params: Record<string, string> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
-    const idFromUrl = pathParts[pathParts.length - 1]; 
-    const reviewId = parseInt(idFromUrl);
+    const reviewId = parseInt(params.id);
     
     // Validate
     if (isNaN(reviewId)) {
@@ -49,7 +46,7 @@ export async function GET(
 // Update an existing review - Authentication Required
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Record<string, string> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -62,10 +59,7 @@ export async function PUT(
       );
     }
 
-    const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
-    const idFromUrl = pathParts[pathParts.length - 1];
-    const reviewId = parseInt(idFromUrl);
+    const reviewId = parseInt(params.id);
     
     if (isNaN(reviewId)) {
       return NextResponse.json(
@@ -118,7 +112,7 @@ export async function PUT(
 // DELETE a review
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Record<string, string> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -130,11 +124,7 @@ export async function DELETE(
       );
     }
     
-    // Extract the ID from the URL
-    const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
-    const idFromUrl = pathParts[pathParts.length - 1];
-    const reviewId = parseInt(idFromUrl);
+    const reviewId = parseInt(params.id);
     
     if (isNaN(reviewId)) {
       return NextResponse.json(
