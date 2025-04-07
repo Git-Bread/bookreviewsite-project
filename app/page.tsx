@@ -207,13 +207,8 @@ export default function Home() {
                 {totalItems > ITEMS_PER_PAGE && (
                   <div className="flex justify-center mt-8">
                     <nav className="flex items-center">
-                      <button 
-                        onClick={() => handlePageChange(currentPage - 1)} 
-                        disabled={currentPage === 1} 
-                        className="px-3 py-2 mr-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Previous
-                      </button>
+                      <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} 
+                      className="px-3 py-2 mr-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
                       
                       <div className="flex">
                         {[...Array(Math.min(5, Math.ceil(totalItems / ITEMS_PER_PAGE)))].map((_, i) => {
@@ -236,28 +231,17 @@ export default function Home() {
                           if (pageNum < 1 || pageNum > totalPages) return null;
                           
                           return (
-                            <button 
-                              key={pageNum} 
-                              onClick={() => handlePageChange(pageNum)} 
-                              className={`px-3 py-2 mx-1 border rounded-md ${
-                                currentPage === pageNum
+                            <button key={pageNum} onClick={() => handlePageChange(pageNum)} className={`px-3 py-2 mx-1 border rounded-md ${
+                              currentPage === pageNum
                                   ? 'bg-blue-600 text-white'
                                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                              }`}
-                            >
-                              {pageNum}
-                            </button>
+                              }`}>{pageNum}</button>
                           );
                         })}
                       </div>
                       
-                      <button
-                        onClick={() => handlePageChange(currentPage + 1)} 
-                        disabled={currentPage >= Math.min(10, Math.ceil(totalItems / ITEMS_PER_PAGE))} 
-                        className="px-3 py-2 ml-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Next
-                      </button>
+                      <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= Math.min(10, Math.ceil(totalItems / ITEMS_PER_PAGE))} 
+                      className="px-3 py-2 ml-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
                     </nav>
                   </div>
                 )}

@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { useSession } from 'next-auth/react';
+import { useNavigate } from 'react-router-dom';
 
 interface Review {
   id: number;
@@ -19,10 +20,11 @@ interface ReviewListProps {
 
 export default function ReviewList({ reviews }: ReviewListProps) {
   const { data: session } = useSession();
+  const navigate = useNavigate();
   
   const handleViewBookDetails = (bookId: string) => {
-    // Open Google Books link in new tab
-    window.open(`https://books.google.com/books?id=${bookId}`, '_blank');
+    // Navigate to the book details page instead of opening in a new tab
+    navigate(`/books/${bookId}`);
   };
   
   // Helper function to format dates safely
@@ -42,33 +44,22 @@ export default function ReviewList({ reviews }: ReviewListProps) {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">{review.title}</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  By {review.username}
-                </p>
-                <button 
-                  className="text-xs text-blue-500 hover:underline mt-1"
-                  onClick={() => handleViewBookDetails(review.bookId)}
-                >
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">By {review.username}</p>
+                <button className="text-xs text-blue-500 hover:underline mt-1" onClick={() => handleViewBookDetails(review.bookId)}>
                   View Book Details
                 </button>
               </div>
               <div className="flex items-center">
                 <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300"}>
-                      ★
-                    </span>
+                    <span key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300"}>★</span>
                   ))}
                 </div>
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                  {review.rating}/5
-                </span>
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">{review.rating}/5</span>
               </div>
             </div>
             
-            <p className="mt-3 text-base text-gray-700 dark:text-gray-300">
-              {review.review}
-            </p>
+            <p className="mt-3 text-base text-gray-700 dark:text-gray-300">{review.review}</p>
             
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
               {review.updatedAt !== review.createdAt ? 

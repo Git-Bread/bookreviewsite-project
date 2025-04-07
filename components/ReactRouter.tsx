@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import HomePage from '@/app/page';
 import AdminPage from '@/app/admin/page';
 import MyReviewsPage from '@/app/myreviews/page';
+import BookDetailsPage from '@/app/books/[id]/page';
 
 const NotFoundPage = () => <div>404 - Not Found</div>;
 
@@ -51,6 +52,7 @@ export default function ReactRouter({ children }: { children: React.ReactNode })
       <div className="w-full">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/books/:id" element={<BookDetailsPage />} />
           
           {/* Protected routes */}
           <Route path="/myreviews" element={

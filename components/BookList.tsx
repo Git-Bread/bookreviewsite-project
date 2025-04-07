@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useNavigate } from 'react-router-dom';
 import ReviewModal from './ReviewModal';
 import LoginModal from './LoginModal';
 
@@ -11,6 +12,7 @@ interface BookListProps {
 
 export default function BookList({ books }: BookListProps) {
   const { data: session } = useSession();
+  const navigate = useNavigate();
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
@@ -35,11 +37,19 @@ export default function BookList({ books }: BookListProps) {
     setIsLoginModalOpen(false);
   };
 
+  const handleBookClick = (book: any) => {
+    navigate(`/books/${book.id}`);
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* Map through the books and display them in a grid layout, from Google Books API */}
       {books.map((book) => (
-        <div key={book.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-gray-800">
+        <div 
+          key={book.id} 
+          className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-gray-800"
+          onClick={() => handleBookClick(book)}
+        >
           <div className="p-4 flex items-start">
             {/* Book cover image or placeholder from api */}
             {book.volumeInfo?.imageLinks?.thumbnail ? (
