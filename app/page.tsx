@@ -1,21 +1,64 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
 import BookList from '@/components/BookList';
+import ReviewList from '@/components/ReviewList';
+
+interface Review {
+  id: number;
+  userId: number;
+  username: string;
+  bookId: string;
+  title: string;
+  rating: number;
+  review: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Home() {
   const [searchMode, setSearchMode] = useState<'books' | 'reviews'>('books');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [books, setBooks] = useState([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [recentReviews, setRecentReviews] = useState<Review[]>([]);
+  const [isLoadingRecentReviews, setIsLoadingRecentReviews] = useState(true);
   const [error, setError] = useState('');
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const ITEMS_PER_PAGE = 15;
+
+  // Fetch recent reviews when the component mounts
+  useEffect(() => {
+    fetchRecentReviews();
+  }, []);
+
+  // Function to fetch the 10 most recent reviews
+  const fetchRecentReviews = async () => {
+    setIsLoadingRecentReviews(true);
+    try {
+      const response = await fetch('/api/reviews?recent=true&limit=10');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch recent reviews');
+      }
+      
+      const data = await response.json();
+      setRecentReviews(data);
+    } catch (err) {
+      console.error('Error fetching recent reviews:', err);
+      // Don't set error state for this - we don't want to show an error message
+      // just for the recent reviews section
+    } finally {
+      setIsLoadingRecentReviews(false);
+    }
+  };
+
   const handleSearch = async (query: string, page = 1) => {
     if (!query.trim()) return; // Ignore empty queries
     setSearchQuery(query); // set search query
@@ -37,14 +80,20 @@ export default function Home() {
         
         const data = await response.json();
         setBooks(data.items || []);
+        setReviews([]); // Clear reviews when showing books
         setTotalItems(data.totalItems || 0);
         setCurrentPage(page);
       } else {
-        // Search internal reviews - TODO: Implement this or some variety of it
-        const response = await fetch(`/api/reviews/search?q=${encodeURIComponent(query)}&page=${page}`);
+        // Search internal reviews
+        const response = await fetch(`/api/reviews?q=${encodeURIComponent(query)}&page=${page}&perPage=${ITEMS_PER_PAGE}`);
         
         if (!response.ok) throw new Error('Failed to search reviews');
-        setBooks([]);
+        
+        const data = await response.json();
+        setBooks([]); // Clear books when showing reviews
+        setReviews(data.items || []);
+        setTotalItems(data.totalItems || 0);
+        setCurrentPage(page);
       }
 
     // check for errors
@@ -52,6 +101,8 @@ export default function Home() {
       console.error('Search error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(`Failed to search for ${searchMode}: ${errorMessage}`);
+      setBooks([]);
+      setReviews([]);
     } finally {
       setIsSearching(false);
     }
@@ -73,6 +124,7 @@ export default function Home() {
   const toggleSearchMode = () => {
     setSearchMode(prev => prev === 'books' ? 'reviews' : 'books');
     setBooks([]);
+    setReviews([]);
     setSearchQuery('');
     setCurrentPage(1);
     setTotalItems(0);
@@ -89,16 +141,45 @@ export default function Home() {
             <p className="text-xl text-gray-500 dark:text-gray-400 text-center mb-6">Discover new titles and share your opinions with our community</p>
             
             {/* Search component */}
-            <SearchBar onSearch={(query) => handleSearch(query, 1)} // Reset to page 1 on new search
-              searchMode={searchMode} onToggleMode={toggleSearchMode} isLoading={isSearching}/>
+            <SearchBar 
+              onSearch={(query) => handleSearch(query, 1)} // Reset to page 1 on new search
+              searchMode={searchMode} 
+              onToggleMode={toggleSearchMode} 
+              isLoading={isSearching}
+            />
           </div>
+
+          {/* Show recent reviews if no search has been performed */}
+          {!searchQuery && (
+            <div className="my-12">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                Recent Reviews
+              </h2>
+              
+              {isLoadingRecentReviews ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : recentReviews.length > 0 ? (
+                <ReviewList reviews={recentReviews} />
+              ) : (
+                <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <p className="text-gray-500 dark:text-gray-400">No reviews have been posted yet.</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Results section */}
           <div className="mt-8">
-            {error && (<div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"><p>{error}</p></div>)}
+            {error && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+                <p>{error}</p>
+              </div>
+            )}
 
             {/* Display search results with pagination info */}
-            {searchQuery && !isSearching && books.length > 0 && (
+            {searchQuery && !isSearching && (books.length > 0 || reviews.length > 0) && (
               <>
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -111,19 +192,28 @@ export default function Home() {
                         Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {Math.min(totalItems, ITEMS_PER_PAGE * 10)} results
                       </>
                     ) : (
-                      `${books.length} results`
+                      `${searchMode === 'books' ? books.length : reviews.length} results`
                     )}
                   </p>
                 </div>
                 
-                <BookList books={books} />
+                {searchMode === 'books' ? (
+                  <BookList books={books} />
+                ) : (
+                  <ReviewList reviews={reviews} />
+                )}
                 
                 {/* Pagination controls */}
                 {totalItems > ITEMS_PER_PAGE && (
                   <div className="flex justify-center mt-8">
                     <nav className="flex items-center">
-                      <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} 
-                      className="px-3 py-2 mr-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                      <button 
+                        onClick={() => handlePageChange(currentPage - 1)} 
+                        disabled={currentPage === 1} 
+                        className="px-3 py-2 mr-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
                       
                       <div className="flex">
                         {[...Array(Math.min(5, Math.ceil(totalItems / ITEMS_PER_PAGE)))].map((_, i) => {
@@ -146,11 +236,15 @@ export default function Home() {
                           if (pageNum < 1 || pageNum > totalPages) return null;
                           
                           return (
-                            <button key={pageNum} onClick={() => handlePageChange(pageNum)} className={`px-3 py-2 mx-1 border rounded-md ${
+                            <button 
+                              key={pageNum} 
+                              onClick={() => handlePageChange(pageNum)} 
+                              className={`px-3 py-2 mx-1 border rounded-md ${
                                 currentPage === pageNum
                                   ? 'bg-blue-600 text-white'
                                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                              }`}>
+                              }`}
+                            >
                               {pageNum}
                             </button>
                           );
@@ -158,8 +252,12 @@ export default function Home() {
                       </div>
                       
                       <button
-                        onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= Math.min(10, Math.ceil(totalItems / ITEMS_PER_PAGE))} 
-                        className="px-3 py-2 ml-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                        onClick={() => handlePageChange(currentPage + 1)} 
+                        disabled={currentPage >= Math.min(10, Math.ceil(totalItems / ITEMS_PER_PAGE))} 
+                        className="px-3 py-2 ml-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
                     </nav>
                   </div>
                 )}
@@ -167,7 +265,7 @@ export default function Home() {
             )}
             
             {/* No results message */}
-            {searchQuery && !isSearching && books.length === 0 && !error && (
+            {searchQuery && !isSearching && books.length === 0 && reviews.length === 0 && !error && (
               <div className="text-center py-10">
                 <p className="text-gray-500 dark:text-gray-400">No results found for "{searchQuery}"</p>
               </div>

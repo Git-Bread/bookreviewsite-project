@@ -3,9 +3,9 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import db from "@/db";
 import { reviews, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, like, or, sql, desc } from "drizzle-orm";
 
-// Helper function to create a query with user join, avoids repetition, only thing it does is adds username to the reviews query
+// Helper function to create a query with user join
 function createReviewQuery() {
   return db.select({
     id: reviews.id,
@@ -28,9 +28,66 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const userId = url.searchParams.get("userId");
     const getAll = url.searchParams.get("all") === "true";
+    const searchQuery = url.searchParams.get("q");
+    const page = parseInt(url.searchParams.get("page") || "1");
+    const perPage = parseInt(url.searchParams.get("perPage") || "15");
     const session = await getServerSession(authOptions);
+    const getRecent = url.searchParams.get("recent") === "true";
+    const limit = parseInt(url.searchParams.get("limit") || "10");
     
-    // Case 1: Get current authenticated user's reviews (private, requires auth)
+    if (getRecent) {
+      // Get the most recent reviews with limit
+      const recentReviews = await createReviewQuery()
+        .orderBy(desc(reviews.createdAt))
+        .limit(limit)
+        .all();
+      
+      return NextResponse.json(recentReviews);
+    }
+    
+    // Search functionality
+    if (searchQuery) {
+      const searchPattern = `%${searchQuery}%`;
+      
+      // Get total count for pagination
+      const totalCountResult = await db
+        .select({ count: sql`count(*)` })
+        .from(reviews)
+        .leftJoin(users, eq(reviews.userId, users.id))
+        .where(
+          or(
+            like(reviews.title, searchPattern),
+            like(reviews.review, searchPattern),
+            like(users.username, searchPattern),
+            like(reviews.bookId, searchPattern)
+          )
+        );
+      
+      const totalCount = Number(totalCountResult[0].count);
+      
+      // Calculate offset for pagination
+      const offset = (page - 1) * perPage;
+      
+      // Query reviews with pagination
+      const searchResults = await createReviewQuery()
+        .where(
+          or(
+            like(reviews.title, searchPattern),
+            like(reviews.review, searchPattern),
+            like(users.username, searchPattern),
+            like(reviews.bookId, searchPattern)
+          )
+        )
+        .limit(perPage)
+        .offset(offset);
+      
+      return NextResponse.json({
+        items: searchResults,
+        totalItems: totalCount
+      });
+    }
+    
+    // Get current authenticated user's reviews (private, requires auth)
     if (!getAll && !userId) {
       if (!session || !session.user || !session.user.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -42,13 +99,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(userReviews);
     }
     
-    // Case 2: Get all reviews (public)
+    // Get all reviews (public)
     if (getAll) {
       const allReviews = await createReviewQuery().all();
       return NextResponse.json(allReviews);
     }
     
-    // Case 3: Get reviews by specific user ID (public)
+    // Get reviews by specific user ID (public)
     if (userId) {
       const userIdNum = parseInt(userId);
       
@@ -65,7 +122,7 @@ export async function GET(request: NextRequest) {
     
     // Fallback
     return NextResponse.json(
-      { error: "Invalid request. Use 'all=true' or 'userId=X' parameters." },
+      { error: "Invalid request. Use 'all=true', 'userId=X', or 'q=search' parameters." },
       { status: 400 }
     );
 
