@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import React from 'react';
 
 interface User {
@@ -92,7 +93,7 @@ export default function UserTable({
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{user.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{user.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {format(new Date(user.createdAt), 'PPP')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.admin ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>

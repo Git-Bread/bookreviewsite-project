@@ -8,10 +8,13 @@ import { authOptions } from "@/lib/auth";
 // Get a specific review by ID - Public
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
   try {
-    const reviewId = parseInt(params.id);
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const idFromUrl = pathParts[pathParts.length - 1]; 
+    const reviewId = parseInt(idFromUrl);
     
     // Validate
     if (isNaN(reviewId)) {
@@ -46,7 +49,7 @@ export async function GET(
 // Update an existing review - Authentication Required
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -59,7 +62,11 @@ export async function PUT(
       );
     }
 
-    const reviewId = parseInt(params.id);
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const idFromUrl = pathParts[pathParts.length - 1];
+    const reviewId = parseInt(idFromUrl);
+    
     if (isNaN(reviewId)) {
       return NextResponse.json(
         { error: "Invalid review ID" },
@@ -108,56 +115,60 @@ export async function PUT(
   }
 }
   
-// Delete a review - Authentication Required
+// DELETE a review
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
-    // Auth check
+    
     if (!session?.user) {
       return NextResponse.json(
-        { error: "Unauthorized - Authentication required" },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
     
-    const reviewId = parseInt(params.id);
+    // Extract the ID from the URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const idFromUrl = pathParts[pathParts.length - 1];
+    const reviewId = parseInt(idFromUrl);
+    
     if (isNaN(reviewId)) {
       return NextResponse.json(
         { error: "Invalid review ID" },
         { status: 400 }
       );
     }
-
-    // Check if the review exists and belongs to the user
-    const existingReview = await db.select()
+    
+    // Get the review to check ownership
+    const review = await db.select()
       .from(reviews)
-      .where(
-        and(
-          eq(reviews.id, reviewId),
-          eq(reviews.userId, parseInt(session.user.id))
-        )
-      )
+      .where(eq(reviews.id, reviewId))
       .get();
-
-    if (!existingReview) {
+    
+    if (!review) {
       return NextResponse.json(
-        { error: "Review not found or you don't have permission to delete it" },
+        { error: "Review not found" },
         { status: 404 }
       );
     }
-
+    
+    // Allow admins to delete any review, but regular users can only delete their own
+    if (!session.user.admin && review.userId !== parseInt(session.user.id)) {
+      return NextResponse.json(
+        { error: "You can only delete your own reviews" },
+        { status: 403 }
+      );
+    }
+    
     // Delete the review
     await db.delete(reviews)
       .where(eq(reviews.id, reviewId));
-
-    return NextResponse.json({ 
-      success: true, 
-      message: "Review deleted successfully" 
-    });
+    
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting review:", error);
     return NextResponse.json(
