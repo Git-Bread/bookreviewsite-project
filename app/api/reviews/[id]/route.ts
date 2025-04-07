@@ -8,10 +8,10 @@ import { authOptions } from "@/lib/auth";
 // Get a specific review by ID - Public
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const reviewId = parseInt(params.id);
+    const reviewId = parseInt(context.params.id);
     
     // Validate
     if (isNaN(reviewId)) {
@@ -46,7 +46,7 @@ export async function GET(
 // Update an existing review - Authentication Required
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -59,7 +59,7 @@ export async function PUT(
       );
     }
 
-    const reviewId = parseInt(params.id);
+    const reviewId = parseInt(context.params.id);
     
     if (isNaN(reviewId)) {
       return NextResponse.json(
@@ -112,7 +112,7 @@ export async function PUT(
 // DELETE a review
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -124,7 +124,7 @@ export async function DELETE(
       );
     }
     
-    const reviewId = parseInt(params.id);
+    const reviewId = parseInt(context.params.id);
     
     if (isNaN(reviewId)) {
       return NextResponse.json(
