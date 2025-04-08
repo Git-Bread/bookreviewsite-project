@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:create": "tsx scripts/create-db.ts",
-    "db:admin": "tsx scripts/create-admin.ts"
+    "db:admin": "tsx scripts/create-admin.ts",
+    "db:setup": "tsx scripts/setup-db.ts",
+    "postinstall": "tsx scripts/init-db.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
