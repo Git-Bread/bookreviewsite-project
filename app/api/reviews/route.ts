@@ -11,6 +11,7 @@ function createReviewQuery() {
     id: reviews.id,
     userId: reviews.userId,
     bookId: reviews.bookId,
+    bookTitle: reviews.bookTitle,
     rating: reviews.rating,
     review: reviews.review,
     title: reviews.title,
@@ -144,11 +145,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { bookId, rating, review, title } = await request.json();
+    const { bookId, bookTitle, rating, review, title } = await request.json();
 
-    if (!bookId) {
+    if (!bookId || !bookTitle) {
       return NextResponse.json(
-        { error: "Book ID is required" },
+        { error: "Book ID and Book Title are required" },
         { status: 400 }
       );
     }
@@ -158,6 +159,7 @@ export async function POST(request: NextRequest) {
       .values({
         userId: userId,
         bookId,
+        bookTitle,
         rating,
         review,
         title,

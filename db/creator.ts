@@ -27,6 +27,7 @@ export const initDb = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       book_id TEXT NOT NULL,
+      book_title TEXT NOT NULL,
       rating INTEGER NOT NULL,
       review TEXT NOT NULL,
       title TEXT NOT NULL,

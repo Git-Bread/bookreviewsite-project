@@ -5,6 +5,7 @@ interface Review {
   userId: number;
   username: string;
   bookId: string;
+  bookTitle: string;
   title: string;
   rating: number;
   review: string;
@@ -41,6 +42,7 @@ export default function ReviewTable({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Book</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Book Title</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Title</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rating</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
@@ -49,7 +51,7 @@ export default function ReviewTable({
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
               {reviews.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">No reviews found</td>
+                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">No reviews found</td>
                 </tr>
               ) : (
                 reviews.map(review => (
@@ -57,6 +59,7 @@ export default function ReviewTable({
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{review.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{review.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{review.bookId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{review.bookTitle}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{review.title}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
                       {Array.from({ length: review.rating }).map((_, i) => (

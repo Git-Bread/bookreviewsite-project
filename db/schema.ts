@@ -13,6 +13,7 @@ export const reviews = sqliteTable("reviews", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   bookId: text("book_id").notNull(),
+  bookTitle: text("book_title").notNull(),
   rating: integer("rating").notNull(),
   review: text("review").notNull(),
   title: text("title").notNull(),

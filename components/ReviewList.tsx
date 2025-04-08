@@ -7,6 +7,7 @@ interface Review {
   userId: number;
   username: string;
   bookId: string;
+  bookTitle: string;
   title: string;
   rating: number;
   review: string;
@@ -22,8 +23,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
   const { data: session } = useSession();
   const navigate = useNavigate();
   
-  const handleViewBookDetails = (bookId: string) => {
-    // Navigate to the book details page instead of opening in a new tab
+  const handleNavigateToBook = (bookId: string) => {
     navigate(`/books/${bookId}`);
   };
   
@@ -39,15 +39,19 @@ export default function ReviewList({ reviews }: ReviewListProps) {
   return (
     <div className="space-y-6">
       {reviews.map((review) => (
-        <div key={review.id} className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div 
+          key={review.id} 
+          className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg cursor-pointer transition-shadow hover:shadow-lg" 
+          onClick={() => handleNavigateToBook(review.bookId)}
+        >
           <div className="px-4 py-5 sm:p-6">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">{review.title}</h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">By {review.username}</p>
-                <button className="text-xs text-blue-500 hover:underline mt-1" onClick={() => handleViewBookDetails(review.bookId)}>
-                  View Book Details
-                </button>
+                <p className="mt-1 text-sm font-medium text-blue-600 dark:text-blue-400">
+                  Book: {review.bookTitle}
+                </p>
               </div>
               <div className="flex items-center">
                 <div className="flex text-yellow-400">

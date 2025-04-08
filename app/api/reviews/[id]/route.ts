@@ -79,7 +79,7 @@ export async function PUT(
       );
     }
     
-    const { rating, review, title } = await request.json();
+    const { rating, review, title, bookTitle } = await request.json();
   
     // Check if the review exists and belongs to the user
     const existingReview = await db.select()
@@ -105,6 +105,7 @@ export async function PUT(
         rating: rating !== undefined ? rating : existingReview.rating,
         review: review !== undefined ? review : existingReview.review,
         title: title !== undefined ? title : existingReview.title,
+        bookTitle: bookTitle !== undefined ? bookTitle : existingReview.bookTitle,
         updatedAt: new Date(),
       })
       .where(eq(reviews.id, reviewId))

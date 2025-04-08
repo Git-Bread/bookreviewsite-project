@@ -21,6 +21,7 @@ interface Review {
   userId: number;
   username: string;
   bookId: string;
+  bookTitle: string;
   title: string;
   rating: number;
   review: string;

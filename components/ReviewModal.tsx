@@ -51,6 +51,7 @@ export default function ReviewModal({
         },
         body: JSON.stringify({
           bookId: book.id,
+          bookTitle: book.volumeInfo.title,
           rating,
           review: reviewText,
           title,

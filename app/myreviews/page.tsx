@@ -11,6 +11,7 @@ interface Review {
   id: number;
   userId: number;
   bookId: string;
+  bookTitle: string;
   title: string;
   rating: number;
   review: string;
@@ -168,7 +169,7 @@ export default function MyReviewsPage() {
                       <div>
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">{review.title}</h3>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                          Book ID: {review.bookId}
+                          Book: {review.bookTitle}
                         </p>
                       </div>
                       <div className="flex space-x-2">
