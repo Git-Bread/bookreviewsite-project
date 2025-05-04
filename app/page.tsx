@@ -11,6 +11,7 @@ interface Review {
   userId: number;
   username: string;
   bookId: string;
+  bookTitle: string;
   title: string;
   rating: number;
   review: string;
@@ -52,8 +53,6 @@ export default function Home() {
       setRecentReviews(data);
     } catch (err) {
       console.error('Error fetching recent reviews:', err);
-      // Don't set error state for this - we don't want to show an error message
-      // just for the recent reviews section
     } finally {
       setIsLoadingRecentReviews(false);
     }
@@ -80,7 +79,7 @@ export default function Home() {
         
         const data = await response.json();
         setBooks(data.items || []);
-        setReviews([]); // Clear reviews when showing books
+        setReviews([]); 
         setTotalItems(data.totalItems || 0);
         setCurrentPage(page);
       } else {
@@ -90,7 +89,7 @@ export default function Home() {
         if (!response.ok) throw new Error('Failed to search reviews');
         
         const data = await response.json();
-        setBooks([]); // Clear books when showing reviews
+        setBooks([]); 
         setReviews(data.items || []);
         setTotalItems(data.totalItems || 0);
         setCurrentPage(page);
