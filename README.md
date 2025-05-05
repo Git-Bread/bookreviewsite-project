@@ -1,6 +1,6 @@
 # Book Review API Documentation
 
-This is a REST API for managing book reviews with user authentication built with Next.js. It allows users to register, login, and manage their book reviews securely.
+This is a fullstack project for managing book reviews with user authentication built with Next.js. It allows users to register, login, and manage their book reviews securely.
 
 ## Getting Started
 
