@@ -87,13 +87,11 @@ const LoginModal = ({ onClose }: LoginModalProps) => {
         router.refresh();
       }
     } catch (err) {
-      // Format the error for better readability
       let errorMessage = "An unexpected error occurred";
       if (err instanceof Error) {
         errorMessage = err.message;
       }
       
-      // Make error messages more user-friendly
       if (errorMessage.includes("fetch failed") || errorMessage.includes("network")) {
         errorMessage = "Network error. Please check your connection and try again.";
       }
