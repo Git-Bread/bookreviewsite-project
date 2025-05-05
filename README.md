@@ -358,7 +358,8 @@ bookapi-project/
 
 ## Mermaid Diagram
 ```mermaid
-erDiagram LR
+erDiagram
+    direction LR
     users {
         INTEGER id PK
         TEXT username UK
