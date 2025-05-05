@@ -25,7 +25,6 @@ This is a fullstack project for managing book reviews with user authentication b
 
 - **Database**:
   - `drizzle-orm`: TypeScript ORM
-  - `@libsql/client`: SQLite database driver
   - `better-sqlite3`: SQLite database engine
 
 - **Authentication & Security**:
@@ -355,4 +354,29 @@ bookapi-project/
 │   └── schema.ts         # Drizzle schema definition
 ├── lib/                  # Utility functions
 │   └── auth.ts           # NextAuth configuration
+```
+
+## Mermaid Diagram
+```mermaid
+erDiagram
+    users {
+        INTEGER id PK
+        TEXT username UK
+        TEXT password
+        BOOLEAN admin
+        TIMESTAMP createdAt
+        TIMESTAMP updatedAt
+    }
+    reviews {
+        INTEGER id PK
+        INTEGER userId FK
+        TEXT bookId
+        TEXT bookTitle
+        INTEGER rating
+        TEXT review
+        TEXT title
+        TIMESTAMP createdAt
+        TIMESTAMP updatedAt
+    }
+    users ||--o{ reviews : "writes"
 ```
